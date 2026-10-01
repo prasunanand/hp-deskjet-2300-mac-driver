@@ -1,8 +1,9 @@
 # Standalone macOS build of HPLIP's hpcups filter for the HP DeskJet 2300 series
 # (DeskJet 2320/2330/2332, USB 03f0:3654, printer language pcl3gui2).
 
-HPLIP   ?= ../src/hplip-3.26.4+dfsg0
-DEPS    ?= ../src/deps
+SRC     ?= src
+HPLIP   ?= $(SRC)/hplip-3.26.4+dfsg0
+DEPS    ?= $(SRC)/deps
 ARCH    ?= arm64
 MINOS   ?= 12.0
 
@@ -71,24 +72,24 @@ $(CXX_OBJS): $(BUILD)/%.o: $(STAMP)
 $(C_OBJS): $(BUILD)/%.o: $(STAMP)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $(HP)/$*.c
 
-# Download HPLIP and build a static libjpeg into ../src (not checked in)
+# Download HPLIP and build a static libjpeg into src/ (not checked in)
 HPLIP_TAR := hplip_3.26.4+dfsg0.orig.tar.xz
 JPEG_TAR  := jpegsrc.v9f.tar.gz
 
 deps: $(DEPS)/lib/libjpeg.a $(HPLIP)/prnt/hpcups
 
 $(HPLIP)/prnt/hpcups:
-	mkdir -p ../src
-	curl -fL -o ../src/$(HPLIP_TAR) https://deb.debian.org/debian/pool/main/h/hplip/$(HPLIP_TAR)
-	tar -C ../src -xf ../src/$(HPLIP_TAR)
+	mkdir -p $(SRC)
+	curl -fL -o $(SRC)/$(HPLIP_TAR) https://deb.debian.org/debian/pool/main/h/hplip/$(HPLIP_TAR)
+	tar -C $(SRC) -xf $(SRC)/$(HPLIP_TAR)
 
 $(DEPS)/lib/libjpeg.a:
-	mkdir -p ../src
-	curl -fL -o ../src/$(JPEG_TAR) https://www.ijg.org/files/$(JPEG_TAR)
-	tar -C ../src -xzf ../src/$(JPEG_TAR)
-	cd ../src/jpeg-9f && ./configure --disable-shared --enable-static --prefix=$(abspath $(DEPS)) \
+	mkdir -p $(SRC)
+	curl -fL -o $(SRC)/$(JPEG_TAR) https://www.ijg.org/files/$(JPEG_TAR)
+	tar -C $(SRC) -xzf $(SRC)/$(JPEG_TAR)
+	cd $(SRC)/jpeg-9f && ./configure --disable-shared --enable-static --prefix=$(abspath $(DEPS)) \
 		CFLAGS="-O2 -arch $(ARCH) -mmacosx-version-min=$(MINOS)" && $(MAKE) && $(MAKE) install
-	cp ../src/jpeg-9f/jpegint.h $(DEPS)/include/
+	cp $(SRC)/jpeg-9f/jpegint.h $(DEPS)/include/
 
 clean:
 	rm -rf $(BUILD)

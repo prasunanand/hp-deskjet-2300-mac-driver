@@ -18,8 +18,9 @@ Tested on macOS 26.6 (Apple Silicon) with a DeskJet 2332 over USB.
 Requires the Xcode Command Line Tools.
 
 ```sh
-cd driver
-make deps            # downloads HPLIP 3.26.4 + IJG libjpeg 9f into ../src, builds static libjpeg
+git clone https://github.com/prasunanand/hp-deskjet-2300-mac-driver.git
+cd hp-deskjet-2300-mac-driver
+make deps            # downloads HPLIP 3.26.4 + IJG libjpeg 9f into src/, builds static libjpeg
 make                 # builds build/hpcups and build/HP-DeskJet-2300-hpcups.ppd
 sudo ./install.sh    # installs filter + PPD, adds the USB printer as HP_DeskJet_2332
 lpoptions -d HP_DeskJet_2332   # make it your default (macOS keeps this per user)
@@ -48,7 +49,7 @@ sudo rm -rf /Library/Printers/HPDeskJet2300 /Library/Printers/PPDs/Contents/Reso
 
 ## How the macOS build differs from HPLIP
 
-The [Makefile](driver/Makefile) compiles only `prnt/hpcups` and `common/utils.c`, not HPLIP's
+The [Makefile](Makefile) compiles only `prnt/hpcups` and `common/utils.c`, not HPLIP's
 autotools build. It copies the sources into `build/src` with these changes:
 
 - **Header clash.** `common/utils.h` is renamed to `cutils.h`, because macOS filesystems are case-insensitive and
