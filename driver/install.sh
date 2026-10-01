@@ -5,7 +5,7 @@ set -eu
 
 cd "$(dirname "$0")"
 FILTER_DIR=/Library/Printers/HPDeskJet2300
-PPD_SRC=ppd/HP-DeskJet-2300-hpcups.ppd
+PPD_SRC=build/HP-DeskJet-2300-hpcups.ppd
 PPD_DST=/Library/Printers/PPDs/Contents/Resources/HP-DeskJet-2300-hpcups.ppd
 QUEUE=HP_DeskJet_2332
 
@@ -13,7 +13,7 @@ if [ "$(id -u)" -ne 0 ]; then
     echo "Run with sudo: sudo $0" >&2
     exit 1
 fi
-[ -x build/hpcups ] || { echo "build/hpcups missing; run make first" >&2; exit 1; }
+[ -x build/hpcups ] && [ -f "$PPD_SRC" ] || { echo "build output missing; run make first" >&2; exit 1; }
 
 URI=$(lpinfo -v | awk '/usb:\/\/HP\/DeskJet%202300/ {print $2; exit}')
 [ -n "$URI" ] || { echo "DeskJet 2300 series not found on USB; is it plugged in and on?" >&2; exit 1; }

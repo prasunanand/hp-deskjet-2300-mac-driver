@@ -8,6 +8,9 @@ falls back to "Generic PCL Laser Printer". The printer silently drops those jobs
 on Linux via `hpcups` (printer language `pcl3gui2`, no binary plugin), so this repo builds that
 filter natively for macOS.
 
+> Not affiliated with or endorsed by HP Inc. "HP" and "DeskJet" are trademarks of HP Inc.,
+> used here only to identify the printers this works with.
+
 Tested on macOS 26.6 (Apple Silicon) with a DeskJet 2332 over USB.
 
 ## Build and install
@@ -17,20 +20,20 @@ Requires the Xcode Command Line Tools.
 ```sh
 cd driver
 make deps            # downloads HPLIP 3.26.4 + IJG libjpeg 9f into ../src, builds static libjpeg
-make                 # builds driver/build/hpcups
+make                 # builds build/hpcups and build/HP-DeskJet-2300-hpcups.ppd
 sudo ./install.sh    # installs filter + PPD, adds the USB printer as HP_DeskJet_2332
 lpoptions -d HP_DeskJet_2332   # make it your default (macOS keeps this per user)
 lp test/hello.pdf    # print a test page
 ```
 
-For an Intel Mac, build with `make ARCH=x86_64`.
+For an Intel Mac, build with `make ARCH=x86_64`. For Letter paper as the default, use `make PAPER=Letter`.
 
 ## What gets installed
 
 | Path | Purpose |
 | --- | --- |
 | `/Library/Printers/HPDeskJet2300/hpcups` | CUPS raster → PCL3GUI filter |
-| `/Library/Printers/PPDs/Contents/Resources/HP-DeskJet-2300-hpcups.ppd` | PPD (HP's, pointed at the filter above; A4 default) |
+| `/Library/Printers/PPDs/Contents/Resources/HP-DeskJet-2300-hpcups.ppd` | PPD generated from HPLIP's, pointed at the filter above |
 | CUPS queue `HP_DeskJet_2332` | `usb://HP/DeskJet%202300%20series?serial=…` |
 
 The driver also shows up in System Settings → Printers & Scanners as
@@ -58,6 +61,10 @@ autotools build. It copies the sources into `build/src` with these changes:
 libjpeg is linked statically, so the filter depends only on system libraries (`libcups`,
 `libcupsimage`, `libz`, `libc++`). That matters because CUPS runs filters in a sandbox.
 
+The PPD is HPLIP's `ppd/hpcups/hp-deskjet_2300_series.ppd` with four changes: `*cupsFilter` gets the
+filter's absolute install path, the `*NickName` and `*PCFileName` are changed so it doesn't clash with an
+official HP PPD, and the default paper size is set to `PAPER`.
+
 ## Limitations
 
 - Printing only: no scanning, ink levels, or alignment/cleaning utilities.
@@ -66,5 +73,7 @@ libjpeg is linked statically, so the filter depends only on system libraries (`l
 
 ## License
 
-The filter and PPD come from HPLIP (GPL-2.0 / BSD / MIT, see HPLIP's `COPYING`). This repo only adds
-build glue.
+[GPL-2.0](LICENSE). The repo contains only build files; the driver source code and the PPD are downloaded from HPLIP
+at build time. Those files keep their own license headers: GPL-2.0 or HP's BSD-style license,
+copyright HP Development Company, L.P. Because parts of `hpcups` are GPL-2.0, any `hpcups` binary
+built from this repo is GPL-2.0 as well.

@@ -29,10 +29,25 @@ C_SRCS   := jccolor jdatadbf
 OBJS  := $(addprefix $(BUILD)/,$(addsuffix .o,$(CXX_SRCS) $(C_SRCS) cutils))
 STAMP := $(HP)/.prepared
 
-all: $(BUILD)/hpcups
+FILTER_PATH := /Library/Printers/HPDeskJet2300/hpcups
+PAPER       ?= A4
+PPD         := $(BUILD)/HP-DeskJet-2300-hpcups.ppd
+
+all: $(BUILD)/hpcups $(PPD)
 
 $(BUILD)/hpcups: $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+# HP's PPD, pointed at the installed filter, with a distinct name and $(PAPER) default
+$(PPD): $(HPLIP)/ppd/hpcups/hp-deskjet_2300_series.ppd | $(BUILD)
+	sed -E -e 's|^\*cupsFilter: "application/vnd.cups-raster 0 hpcups"|*cupsFilter: "application/vnd.cups-raster 0 $(FILTER_PATH)"|' \
+	       -e 's|^\*NickName: .*|*NickName: "HP DeskJet 2300 series, hpcups 3.26.4 (local build)"|' \
+	       -e 's|^\*PCFileName: .*|*PCFileName: "hp-dj2300-local.ppd"|' \
+	       -e 's/^\*Default(PageSize|PageRegion|ImageableArea|PaperDimension): Letter$$/*Default\1: $(PAPER)/' \
+	       $< > $@
+
+$(BUILD):
+	mkdir -p $@
 
 # macOS filesystems are case-insensitive, so "utils.h" (common/) collides with
 # hpcups' own "Utils.h". Copy the sources and rename common/utils.* to cutils.*.
