@@ -1,0 +1,9 @@
+# Downloaded upstream sources and built deps (make deps)
+/src/
+# Build output
+/driver/build/
+# Test outputs
+/driver/test/*.pcl
+/driver/test/*.ras
+/driver/test/*.log
+.DS_Store

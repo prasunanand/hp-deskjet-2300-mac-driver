@@ -1,0 +1,2 @@
+Hello from a home-built hpcups driver!
+HP DeskJet 2332 test page
